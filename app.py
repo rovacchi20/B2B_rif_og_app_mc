@@ -156,13 +156,22 @@ with t3:
     df_app_basic = load_basic_applications(app_file)
     ba_opts = sorted(df_app_basic['company_name'].dropna().unique())
     ra_opts = sorted(df_app_basic['relation_code'].dropna().unique())
+    # Filtro per Brand Applicazione
     sel_ba = st.multiselect("Brand Applicazione", ba_opts)
+    # Filtro per Reference Applicazione
     sel_ra = st.multiselect("Reference Applicazione", ra_opts)
+    # Filtro per Code Applicazione
+    app_code_opts = sorted(df_app_basic['code'].dropna().unique())
+    sel_code_app = st.multiselect("Code", app_code_opts)
+
     df_app_view = df_app_basic
     if sel_ba:
         df_app_view = df_app_view[df_app_view['company_name'].isin(sel_ba)]
     if sel_ra:
         df_app_view = df_app_view[df_app_view['relation_code'].isin(sel_ra)]
+    if sel_code_app:
+        df_app_view = df_app_view[df_app_view['code'].isin(sel_code_app)]
+
     st.dataframe(df_app_view.reset_index(drop=True), use_container_width=True)
 
 # Footer
