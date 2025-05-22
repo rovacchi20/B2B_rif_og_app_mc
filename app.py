@@ -150,7 +150,7 @@ with t2:
         df_ref_view = df_ref_view[df_ref_view['relation_code'].isin(sel_rr)]
     if sel_code:
         df_ref_view = df_ref_view[df_ref_view['code'].isin(sel_code)]
-    st.dataframe(df_ref_view.reset_index(drop=True), use_container_width=True).reset_index(drop=True), use_container_width=True)
+    st.dataframe(df_ref_view.reset_index(drop=True), use_container_width=True)
 
 with t3:
     df_app_basic = load_basic_applications(app_file)
