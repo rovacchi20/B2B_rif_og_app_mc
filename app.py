@@ -136,14 +136,21 @@ with t2:
     df_ref_basic = load_basic_references(ref_file)
     b_opts = sorted(df_ref_basic['company_name'].dropna().unique())
     r_opts = sorted(df_ref_basic['relation_code'].dropna().unique())
+    # Filtro per Brand
     sel_br = st.multiselect("Brand", b_opts)
+    # Filtro per Reference
     sel_rr = st.multiselect("Reference", r_opts)
+    # Filtro per Code
+    code_opts = sorted(df_ref_basic['code'].dropna().unique())
+    sel_code = st.multiselect("Code", code_opts)
     df_ref_view = df_ref_basic
     if sel_br:
         df_ref_view = df_ref_view[df_ref_view['company_name'].isin(sel_br)]
     if sel_rr:
         df_ref_view = df_ref_view[df_ref_view['relation_code'].isin(sel_rr)]
-    st.dataframe(df_ref_view.reset_index(drop=True), use_container_width=True)
+    if sel_code:
+        df_ref_view = df_ref_view[df_ref_view['code'].isin(sel_code)]
+    st.dataframe(df_ref_view.reset_index(drop=True), use_container_width=True).reset_index(drop=True), use_container_width=True)
 
 with t3:
     df_app_basic = load_basic_applications(app_file)
