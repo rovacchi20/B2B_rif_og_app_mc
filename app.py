@@ -91,8 +91,11 @@ def find_material_col(columns):
 # -------------------------------------------
 df_basic = load_basic_products(prod_file)
 categories = sorted(df_basic['category_text'].dropna().unique())
-skus_all = sorted(df_basic['product_code'].str.lstrip('0').dropna().unique())
-
+skus_all = sorted(
+    df_basic['product_code']
+            .dropna()
+            .unique()
+)
 col1, col2 = st.columns(2)
 with col1:
     sel_cat = st.selectbox("Category Text", [""] + categories)
@@ -115,7 +118,7 @@ if sel_cat or sel_sku:
     if sel_cat:
         df_view = df_view[df_view['category_text']==sel_cat]
     if sel_sku:
-        df_view = df_view[df_view['product_code'].str.lstrip('0')==sel_sku]
+        ddf_view = df_view[df_view['product_code'] == sel_sku]
 
     df_ref_full = load_full_references(ref_file)
     temp = df_ref_full[df_ref_full['code'].isin(
