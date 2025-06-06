@@ -136,7 +136,7 @@ with t2:
     rif_orig_opts = sorted(show_df['riferimento_originale'].dropna().unique()) if 'riferimento_originale' in show_df.columns else []
 
     sel_code = st.multiselect("Code", code_opts)
-    sel_marca_con_nome = st.multiselect("Marca con nome", marca_con_nome_opts)
+    sel_marca_con_nome = st.multiselect("Marca", marca_con_nome_opts)
     sel_rif_orig = st.multiselect("Riferimento originale", rif_orig_opts)
 
     df_view = show_df
