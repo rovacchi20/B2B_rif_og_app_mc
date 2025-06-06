@@ -132,18 +132,18 @@ with t2:
     if "marca" in show_df.columns:
         show_df = show_df.drop(columns=["codice_marca"])
     code_opts = sorted(show_df['code'].dropna().unique()) if 'code' in show_df.columns else []
-    marca_con_nome_opts = sorted(show_df['marca'].dropna().unique()) if 'marca_con_nome' in show_df.columns else []
+    marca_opts = sorted(show_df['marca'].dropna().unique()) if 'marca' in show_df.columns else []
     rif_orig_opts = sorted(show_df['riferimento_originale'].dropna().unique()) if 'riferimento_originale' in show_df.columns else []
 
     sel_code = st.multiselect("Code", code_opts)
-    sel_marca_con_nome = st.multiselect("Marca", marca_con_nome_opts)
+    sel_marca = st.multiselect("Marca", marca_opts)
     sel_rif_orig = st.multiselect("Riferimento originale", rif_orig_opts)
 
     df_view = show_df
     if sel_code:
         df_view = df_view[df_view['code'].isin(sel_code)]
-    if sel_marca_con_nome:
-        df_view = df_view[df_view['marca'].isin(sel_marca_con_nome)]
+    if sel_marca:
+        df_view = df_view[df_view['marca'].isin(sel_marca)]
     if sel_rif_orig:
         df_view = df_view[df_view['riferimento_originale'].isin(sel_rif_orig)]
     st.dataframe(df_view.reset_index(drop=True), use_container_width=True)
@@ -155,18 +155,18 @@ with t3:
     if "marca" in show_df.columns:
         show_df = show_df.drop(columns=["codice_marca"])
     code_opts = sorted(show_df['code'].dropna().unique()) if 'code' in show_df.columns else []
-    marca_con_nome_opts = sorted(show_df['marca'].dropna().unique()) if 'marca_con_nome' in show_df.columns else []
+    marca_opts = sorted(show_df['marca'].dropna().unique()) if 'marca' in show_df.columns else []
     modello_opts = sorted(show_df['modello'].dropna().unique()) if 'modello' in show_df.columns else []
 
     sel_code = st.multiselect("Code", code_opts)
-    sel_marca_con_nome = st.multiselect("Marca", marca_con_nome_opts)
+    sel_marca = st.multiselect("Marca", marca_opts)
     sel_modello = st.multiselect("Modello", modello_opts)
 
     df_view = show_df
     if sel_code:
         df_view = df_view[df_view['code'].isin(sel_code)]
-    if sel_marca_con_nome:
-        df_view = df_view[df_view['marca'].isin(sel_marca_con_nome)]
+    if sel_marca:
+        df_view = df_view[df_view['marca'].isin(sel_marca)]
     if sel_modello:
         df_view = df_view[df_view['modello'].isin(sel_modello)]
     st.dataframe(df_view.reset_index(drop=True), use_container_width=True)
