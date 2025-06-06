@@ -159,7 +159,7 @@ with t3:
     modello_opts = sorted(show_df['modello'].dropna().unique()) if 'modello' in show_df.columns else []
 
     sel_code = st.multiselect("Code", code_opts)
-    sel_marca_con_nome = st.multiselect("Marca con nome", marca_con_nome_opts)
+    sel_marca_con_nome = st.multiselect("Marca", marca_con_nome_opts)
     sel_modello = st.multiselect("Modello", modello_opts)
 
     df_view = show_df
