@@ -130,9 +130,9 @@ with t2:
     st.markdown("### Riferimenti Originali")
     show_df = df_rif.copy()
     if "marca" in show_df.columns:
-        show_df = show_df.drop(columns=["marca"])
+        show_df = show_df.drop(columns=["codice_marca"])
     code_opts = sorted(show_df['code'].dropna().unique()) if 'code' in show_df.columns else []
-    marca_con_nome_opts = sorted(show_df['marca_con_nome'].dropna().unique()) if 'marca_con_nome' in show_df.columns else []
+    marca_con_nome_opts = sorted(show_df['marca'].dropna().unique()) if 'marca_con_nome' in show_df.columns else []
     rif_orig_opts = sorted(show_df['riferimento_originale'].dropna().unique()) if 'riferimento_originale' in show_df.columns else []
 
     sel_code = st.multiselect("Code", code_opts)
@@ -153,9 +153,9 @@ with t3:
     st.markdown("### Applicazioni Macchine")
     show_df = df_app.copy()
     if "marca" in show_df.columns:
-        show_df = show_df.drop(columns=["marca"])
+        show_df = show_df.drop(columns=["codice_marca"])
     code_opts = sorted(show_df['code'].dropna().unique()) if 'code' in show_df.columns else []
-    marca_con_nome_opts = sorted(show_df['marca_con_nome'].dropna().unique()) if 'marca_con_nome' in show_df.columns else []
+    marca_con_nome_opts = sorted(show_df['marca'].dropna().unique()) if 'marca_con_nome' in show_df.columns else []
     modello_opts = sorted(show_df['modello'].dropna().unique()) if 'modello' in show_df.columns else []
 
     sel_code = st.multiselect("Code", code_opts)
@@ -166,7 +166,7 @@ with t3:
     if sel_code:
         df_view = df_view[df_view['code'].isin(sel_code)]
     if sel_marca_con_nome:
-        df_view = df_view[df_view['marca_con_nome'].isin(sel_marca_con_nome)]
+        df_view = df_view[df_view['marca'].isin(sel_marca_con_nome)]
     if sel_modello:
         df_view = df_view[df_view['modello'].isin(sel_modello)]
     st.dataframe(df_view.reset_index(drop=True), use_container_width=True)
