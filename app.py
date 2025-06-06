@@ -143,7 +143,7 @@ with t2:
     if sel_code:
         df_view = df_view[df_view['code'].isin(sel_code)]
     if sel_marca_con_nome:
-        df_view = df_view[df_view['marca_con_nome'].isin(sel_marca_con_nome)]
+        df_view = df_view[df_view['marca'].isin(sel_marca_con_nome)]
     if sel_rif_orig:
         df_view = df_view[df_view['riferimento_originale'].isin(sel_rif_orig)]
     st.dataframe(df_view.reset_index(drop=True), use_container_width=True)
