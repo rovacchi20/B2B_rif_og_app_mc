@@ -56,14 +56,22 @@ df_sap = load_excel(sap_file) if sap_file else None
 # -------------------------------------------
 # Tabs
 # -------------------------------------------
-t1, t2, t3, t4 = st.tabs(["B2B", "Riferimenti", "Applicazioni", "Dati SAP"])
+t1, t2, t3, t4, t5 = st.tabs([
+    "B2B",
+    "Riferimenti",
+    "Applicazioni",
+    "Dati SAP",
+    "Esplosi B2B Viewer"   # ← nuovo tab
+])
 
 # ---- TAB B2B ----
 with t1:
     st.markdown("### Dashboard Prodotti B2B")
-    # Serve: product_code, category_text
+    # Verifica colonne fondamentali
     if not all(col in df_prod.columns for col in ["product_code", "category_text"]):
-        st.warning("Colonne fondamentali mancanti nel file B2B: servono almeno 'product_code' e 'category_text'.")
+        st.warning(
+            "Colonne fondamentali mancanti nel file B2B: servono 'product_code' e 'category_text'."
+        )
         st.write("Colonne trovate:", df_prod.columns.tolist())
     else:
         # Filtri
@@ -75,55 +83,71 @@ with t1:
         with col1:
             sel_cat = st.selectbox("Category Text", [""] + categories)
         with col2:
-            if sel_cat:
-                skus = sorted(df_basic[df_basic['category_text']==sel_cat]['product_code'].dropna().unique())
-            else:
-                skus = skus_all
+            skus = (
+                sorted(df_basic[df_basic['category_text']==sel_cat]['product_code'].dropna().unique())
+                if sel_cat else skus_all
+            )
             sel_sku = st.selectbox("Filtra per SKU", [""] + skus)
 
-        # Visualizzazione avanzata solo se selezionato almeno uno dei due filtri
+        # Visualizzazione avanzata solo se selezionato
         if sel_cat or sel_sku:
             df_view = df_prod.copy()
             if sel_cat:
-                df_view = df_view[df_view['category_text']==sel_cat]
+                df_view = df_view[df_view['category_text'] == sel_cat]
             if sel_sku:
-                df_view = df_view[df_view['product_code']==sel_sku]
+                df_view = df_view[df_view['product_code'] == sel_sku]
 
-            # Merge riferimenti come da originale, con ricerca colonne
+            # ---- Merge riferimenti come da originale ----
             df_rif_full = df_rif.copy()
             if 'code' in df_rif_full.columns:
-                # Ricerca nome colonne robusto
-                company_name_col = find_column(df_rif_full.columns, ['company_name', 'brand'])
-                relation_code_col = find_column(df_rif_full.columns, ['relation_code', 'reference', 'riferimento_originale'])
+                company_name_col = find_column(
+                    df_rif_full.columns,
+                    ['company_name', 'brand']
+                )
+                relation_code_col = find_column(
+                    df_rif_full.columns,
+                    ['relation_code', 'reference', 'riferimento_originale']
+                )
                 if company_name_col and relation_code_col:
-                    temp = df_rif_full[df_rif_full['code'].isin(
-                        df_view['product_code'].str.lstrip('0')
-                    )].copy()
-                    temp['idx'] = temp.groupby('code').cumcount()+1
-                    piv = temp.pivot(index='code', columns='idx', values=[company_name_col, relation_code_col])
-                    piv.columns = [f"brand{i}" if c==company_name_col else f"reference{i}" for c,i in piv.columns]
+                    temp = df_rif_full[
+                        df_rif_full['code'].isin(
+                            df_view['product_code'].str.lstrip('0')
+                        )
+                    ].copy()
+                    temp['idx'] = temp.groupby('code').cumcount() + 1
+
+                    piv = temp.pivot(
+                        index='code',
+                        columns='idx',
+                        values=[company_name_col, relation_code_col]
+                    )
+                    piv.columns = [
+                        f"brand{i}" if col == company_name_col else f"reference{i}"
+                        for col, i in piv.columns
+                    ]
                     piv = piv.reset_index().rename(columns={'code':'sku'})
                     piv['sku_stripped'] = piv['sku'].str.lstrip('0')
+
                     df_view['prod_stripped'] = df_view['product_code'].str.lstrip('0')
                     merged = df_view.merge(
-                        piv, left_on='prod_stripped', right_on='sku_stripped', how='left'
+                        piv,
+                        left_on='prod_stripped',
+                        right_on='sku_stripped',
+                        how='left'
                     )
                 else:
-                    st.warning(
-                        f"Colonne riferimenti non trovate! Colonne disponibili: {df_rif_full.columns.tolist()}. "
-                        "Cerca company_name/relation_code oppure brand/reference/riferimento_originale."
-                    )
                     merged = df_view.copy()
             else:
                 merged = df_view.copy()
 
-            # Multiselect colonne come da originale
+            # ---- Multiselect colonne ----
             available = [c for c in merged.columns if merged[c].notna().any()]
             sel_cols = st.multiselect("Colonne da mostrare", available, default=available)
             if sel_cols:
                 st.dataframe(merged[sel_cols].reset_index(drop=True), use_container_width=True)
-        else:
-            st.info("Seleziona almeno una categoria o uno SKU per caricare i dati.")
+            else:
+                st.info("Seleziona almeno una categoria o uno SKU per caricare i dati.")
+
 
 # ---- TAB RIFERIMENTI ----
 with t2:
@@ -190,6 +214,68 @@ with t4:
             st.dataframe(df_view.reset_index(drop=True), use_container_width=True)
         else:
             st.warning(f"Nessuna colonna 'Materialcode' trovata nel file SAP. Colonne disponibili: {show_df.columns.tolist()}")
+
+# ---- TAB ESplosi B2B VIEWER ----
+with t5:
+    uploaded_file = st.file_uploader(
+        label="Carica il file Excel o CSV contenente i dati",
+        type=["xlsx", "csv"],
+        key="esplosi_b2b"   # chiave dedicata per evitare conflitti
+    )
+    if uploaded_file:
+        # legge Excel o CSV a seconda dell’estensione
+        df = (pd.read_excel(uploaded_file)
+              if uploaded_file.name.endswith(".xlsx")
+              else pd.read_csv(uploaded_file))
+
+        # controlla che ci siano tutte le colonne necessarie
+        required_columns = [
+            "codice_ama",
+            "titolo",
+            "parent",
+            "category_name",
+            "link_url"
+        ]
+        if not set(required_columns).issubset(df.columns):
+            st.error(f"Manca una colonna tra: {required_columns}")
+            st.stop()
+
+        st.subheader("Filtri")
+        c1, c2, c3, c4 = st.columns(4)
+        codes     = sorted(df["codice_ama"].dropna().astype(str).unique())
+        titles    = sorted(df["titolo"].dropna().astype(str).unique())
+        parents   = sorted(df["parent"].dropna().astype(str).unique())
+        categories= sorted(df["category_name"].dropna().astype(str).unique())
+
+        code_filter     = c1.selectbox("Filtra codice_ama:", ["Tutti"] + codes)
+        title_filter    = c2.selectbox("Filtra titolo:",    ["Tutti"] + titles)
+        parent_filter   = c3.selectbox("Filtra parent:",    ["Tutti"] + parents)
+        category_filter = c4.selectbox("Filtra category_name:", ["Tutti"] + categories)
+
+        dff = df.copy()
+        if code_filter     != "Tutti": dff = dff[dff["codice_ama"]   == code_filter]
+        if title_filter    != "Tutti": dff = dff[dff["titolo"]       == title_filter]
+        if parent_filter   != "Tutti": dff = dff[dff["parent"]       == parent_filter]
+        if category_filter != "Tutti": dff = dff[dff["category_name"]== category_filter]
+
+        # crea la colonna HTML per il link
+        dff["Link"] = dff["link_url"].apply(
+            lambda u: f'<a href="{u}" target="_blank">Apri</a>'
+        )
+        display_cols = [
+            "codice_ama",
+            "titolo",
+            "parent",
+            "category_name",
+            "Link"
+        ]
+        st.markdown(
+            dff[display_cols]
+               .to_html(escape=False, index=False),
+            unsafe_allow_html=True
+        )
+    else:
+        st.info("Carica un file per iniziare.")
 
 st.markdown("---")
 st.write("© 2025 Dashboard Prodotti & Applicazioni & SAP")
